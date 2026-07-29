@@ -1,0 +1,1189 @@
+:root {
+  --bg: #0a0d14;
+  --panel: #10141d;
+  --panel-2: #161b27;
+  --line: #232a39;
+  --text: #e7ecf5;
+  --muted: #8e99ad;
+  --accent: #6c8ae4;
+  --danger: #e0645a;
+  --radius: 12px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* Mobile browsers shrink the visual viewport as their chrome slides away;
+   dvh tracks that, where 100% would leave the layout overshooting. */
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 390px 1fr;
+  height: 100%;
+}
+
+/* ------------------------------------------------------------------ panel */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 14px;
+}
+
+.panel-body {
+  display: contents;
+}
+
+.panel.is-collapsed .panel-body {
+  display: none;
+}
+
+.panel-toggle {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+/* Caret points down to close, up to open. */
+.panel-toggle[aria-expanded='true'] {
+  transform: rotate(180deg);
+}
+
+/* Title takes the slack, so the buttons stay together on the right. */
+.brand > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Tracking stays tight — this is a name, not a wordmark, and it has to sit on
+   one line next to the buttons at the narrowest sidebar width. */
+.brand h1 {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.search {
+  position: relative;
+  padding: 0 18px 12px;
+}
+
+.search input {
+  width: 100%;
+  padding: 9px 32px 9px 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  outline: none;
+}
+
+.search input:focus {
+  border-color: var(--accent);
+}
+
+.search .clear {
+  position: absolute;
+  right: 26px;
+  top: 6px;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.zone-filter {
+  margin: 0 18px 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.zone-filter-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.zone-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  /* Right padding leaves room for the caret drawn on the control. */
+  padding: 9px 34px 9px 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+
+.zone-filter-btn:hover,
+.zone-filter-btn.is-open {
+  border-color: var(--zone);
+}
+
+/* Up to four swatches, overlapped, so a multi-zone filter still reads as colour. */
+.zone-dots {
+  display: flex;
+  flex: none;
+}
+
+.zone-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--zone);
+  box-shadow: 0 0 0 2px var(--panel-2);
+}
+
+.zone-dots i + i {
+  margin-left: -3px;
+}
+
+.zone-filter-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zone-filter-count {
+  flex: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.zone-filter-control::after {
+  content: '▾';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.zone-menu {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+.zone-opt {
+  --zone: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 9px;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.zone-opt:hover {
+  background: color-mix(in srgb, var(--zone) 14%, transparent);
+}
+
+.zone-opt.is-on {
+  background: color-mix(in srgb, var(--zone) 20%, transparent);
+}
+
+.zone-check {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.zone-opt.is-on .zone-check {
+  background: var(--zone);
+  border-color: var(--zone);
+}
+
+/* The tick is drawn rather than typed, so it inherits no font quirks. */
+.zone-opt.is-on .zone-check::after {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 8px;
+  margin: 0 auto;
+  border: solid #0a0d14;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-1px) rotate(45deg);
+}
+
+.zone-opt > i {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--zone);
+}
+
+.zone-opt-count {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.zone-opt-all {
+  border-bottom: 1px solid var(--line);
+  border-radius: 7px 7px 0 0;
+  margin-bottom: 4px;
+  padding-bottom: 9px;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Scrollbars hidden — these still scroll, by wheel, drag and keyboard. */
+.scroll,
+.stats,
+.zone-menu {
+  scrollbar-width: none;
+}
+
+.scroll::-webkit-scrollbar,
+.stats::-webkit-scrollbar,
+.zone-menu::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* ------------------------------------------------------------------- list */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  --zone: var(--muted);
+  display: grid;
+  grid-template-columns: 3px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px 10px 0;
+  text-align: left;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  overflow: hidden;
+  transition: 0.15s;
+}
+
+.row:hover {
+  border-color: color-mix(in srgb, var(--zone) 60%, var(--line));
+  transform: translateX(2px);
+}
+
+.row.is-on {
+  border-color: var(--zone);
+  background: color-mix(in srgb, var(--zone) 12%, var(--panel-2));
+}
+
+.row-bar {
+  align-self: stretch;
+  background: var(--zone);
+}
+
+.row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.row-title {
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-snip {
+  font-size: 12.5px;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.row-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6f7a8d;
+  margin-top: 2px;
+}
+
+.row-meta i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--zone);
+}
+
+.row-go {
+  color: color-mix(in srgb, var(--zone) 70%, var(--muted));
+  font-size: 15px;
+}
+
+/* ------------------------------------------------------------------ cards */
+
+.card {
+  --zone: var(--accent);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--zone);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.card h2 {
+  margin: 6px 0 4px;
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card header h2 {
+  margin: 0;
+}
+
+.zone-card .detail {
+  margin: 8px 0 12px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.zone-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--zone);
+}
+
+.zone-tag i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--zone);
+}
+
+/* Its own line, so the zone tag below it isn't crowded up against it. */
+.back {
+  display: block;
+  margin-bottom: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 0;
+  cursor: pointer;
+  font-size: 12.5px;
+}
+
+.back:hover {
+  color: var(--text);
+}
+
+.stamp {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  color: #6f7a8d;
+}
+
+.note-card .body {
+  white-space: pre-wrap;
+  font-size: 14px;
+  color: #cdd6e4;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-bottom: 14px;
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.hint-inline {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 28px 12px;
+}
+
+.empty p {
+  margin: 0 0 12px;
+  font-size: 13.5px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* ----------------------------------------------------------------- editor */
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* Grows to fill the panel, but never shrinks below its own content — shrinking
+     would leave the fields spilling out past the card's border. */
+  flex: 1 0 auto;
+  min-height: 420px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field > span {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 9px 11px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  outline: none;
+  resize: none;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--zone);
+}
+
+.field-grow {
+  flex: 1;
+}
+
+.field-grow textarea {
+  height: 100%;
+  min-height: 160px;
+  line-height: 1.6;
+}
+
+.zone-blurb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.zone-blurb i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.btn {
+  padding: 8px 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: 0.15s;
+  font-size: 13.5px;
+}
+
+.btn:hover {
+  border-color: #37415a;
+  background: #1c2231;
+}
+
+.btn-sm {
+  padding: 6px 11px;
+  font-size: 12.5px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0d14;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #7f9aea;
+  border-color: #7f9aea;
+}
+
+.btn-ghost {
+  background: transparent;
+}
+
+.btn-danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--line));
+}
+
+.btn-danger:hover {
+  background: color-mix(in srgb, var(--danger) 18%, var(--panel-2));
+  border-color: var(--danger);
+}
+
+/* ------------------------------------------------------------------ stage */
+
+.stage {
+  position: relative;
+  min-width: 0;
+}
+
+.stage canvas {
+  display: block;
+  touch-action: none;
+}
+
+.toolbar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(16, 20, 29, 0.78);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.tool:hover {
+  color: var(--text);
+  background: #1c2231;
+}
+
+.tool.is-on {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  border-color: var(--accent);
+}
+
+.tool-slider {
+  cursor: default;
+  gap: 8px;
+}
+
+.tool-slider input {
+  width: 78px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------ zone stats */
+
+.stats {
+  position: absolute;
+  top: 68px;
+  right: 16px;
+  width: 262px;
+  padding: 12px 13px 11px;
+  background: rgba(16, 20, 29, 0.82);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.stats-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stats.is-closed .stats-head {
+  margin-bottom: 0;
+}
+
+.stats-head > span:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.stats h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.stats-head em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-caret {
+  flex: none;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.stats-head[aria-expanded='true'] .stats-caret {
+  transform: rotate(180deg);
+}
+
+.stats-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stats-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stats-row {
+  --zone: var(--muted);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  width: 100%;
+  padding: 3px 4px;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stats-row:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.stats-row.is-on {
+  background: color-mix(in srgb, var(--zone) 16%, transparent);
+}
+
+.stats-row.is-zero {
+  opacity: 0.45;
+}
+
+.stats-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats-label i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--zone);
+  flex: none;
+}
+
+.stats-value {
+  font-size: 12px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.stats-value em {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 11px;
+  margin-left: 3px;
+}
+
+.stats-track {
+  grid-column: 1 / -1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.stats-fill {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: 2px;
+  background: var(--zone);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 11.5px;
+  color: #59637a;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.booting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 100%;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.booting p {
+  margin: 0;
+}
+
+.pulse {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--accent), transparent 68%);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* --------------------------------------------------------- 3d html labels */
+
+.pin-label {
+  --zone: var(--accent);
+  padding: 3px 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text);
+  background: rgba(10, 13, 20, 0.82);
+  border: 1px solid color-mix(in srgb, var(--zone) 55%, transparent);
+  border-radius: 7px;
+  transform: translateY(-4px);
+  backdrop-filter: blur(6px);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pin-label.is-selected {
+  background: var(--zone);
+  color: #0a0d14;
+  font-weight: 700;
+  border-color: var(--zone);
+}
+
+.zone-label {
+  --zone: var(--accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 5px 11px;
+  background: rgba(10, 13, 20, 0.85);
+  border: 1px solid var(--zone);
+  border-radius: 9px;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+}
+
+.zone-label span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--zone);
+}
+
+.zone-label em {
+  font-size: 10.5px;
+  font-style: normal;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------- responsive */
+
+/* Between the two-column layout and the stacked one, the sidebar just narrows. */
+@media (max-width: 1180px) {
+  .app {
+    grid-template-columns: minmax(300px, 32vw) 1fr;
+  }
+
+  .stats {
+    width: 232px;
+  }
+}
+
+/*
+ * Tablet and phone: stack the brain over the panel. Both regions scroll
+ * internally rather than the page scrolling, so the canvas always has a fixed
+ * box to size itself against.
+ */
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(280px, 46vh) minmax(0, 1fr);
+  }
+
+  .stage {
+    order: 1;
+  }
+
+  .panel {
+    order: 2;
+    min-height: 0;
+    border-right: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  /* The mouse-only instructions don't apply, and the space is needed. */
+  .hint {
+    display: none;
+  }
+
+  .toolbar {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* The panel now ends at the bottom of the screen, so the last card needs
+     clearance it didn't when the sidebar was full-height. */
+  .scroll {
+    padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Collapsed, the panel is only its header — the brain takes the rest. */
+  .app.panel-collapsed {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .stats {
+    top: auto;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-height: 46%;
+    overflow-y: auto;
+  }
+
+  /* Two columns of bars keeps the stats short over a shallow stage. */
+  .stats-rows {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 14px;
+  }
+
+  .zone-menu {
+    max-height: min(300px, 42vh);
+  }
+}
+
+/* Phone: tighten every gutter and drop back to a single column of bars. */
+@media (max-width: 560px) {
+  .app {
+    grid-template-rows: minmax(240px, 42vh) minmax(0, 1fr);
+  }
+
+  .brand {
+    padding: 14px 14px 10px;
+  }
+
+  .brand h1 {
+    font-size: 17px;
+  }
+
+  .search {
+    padding: 0 14px 10px;
+  }
+
+  .search .clear {
+    right: 22px;
+  }
+
+  .zone-filter {
+    margin: 0 14px 12px;
+    padding-bottom: 12px;
+  }
+
+  /* Extra room at the foot so the last card clears the edge of the screen. */
+  .scroll {
+    padding: 12px 12px calc(22px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .toolbar {
+    gap: 4px;
+    padding: 5px;
+  }
+
+  .tool {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+
+  .tool-slider input {
+    width: 54px;
+  }
+
+  .stats {
+    max-height: 40%;
+  }
+
+  .stats-rows {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .card {
+    padding: 12px 13px;
+  }
+
+  /* A fixed tall editor would push the actions off a short panel — let it be
+     as tall as its fields need and scroll the panel instead. */
+  .editor {
+    min-height: 0;
+  }
+
+  .field-grow {
+    flex: 0 0 auto;
+  }
+
+  .field-grow textarea {
+    height: auto;
+    min-height: 120px;
+  }
+}
+
+/*
+ * Landscape phones: almost no vertical room. Give the brain the whole height
+ * and put the panel beside it again, narrow.
+ */
+@media (max-width: 900px) and (max-height: 520px) and (orientation: landscape) {
+  .app,
+  .app.panel-collapsed {
+    grid-template-columns: minmax(240px, 42vw) 1fr;
+    grid-template-rows: 100%;
+  }
+
+  /* Side by side there is nothing to gain by folding the panel away. */
+  .panel.is-collapsed .panel-body {
+    display: contents;
+  }
+
+  .panel-toggle {
+    display: none;
+  }
+
+  .panel {
+    order: 1;
+    border-right: 1px solid var(--line);
+    border-top: 0;
+  }
+
+  .stage {
+    order: 2;
+  }
+
+  .stats {
+    top: 58px;
+    bottom: auto;
+    left: auto;
+    width: 200px;
+    max-height: calc(100% - 74px);
+  }
+
+  .stats-rows {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Coarse pointers can't hover, so make the tap targets worth tapping. */
+@media (pointer: coarse) {
+  .tool,
+  .zone-opt,
+  .stats-row {
+    min-height: 38px;
+  }
+
+  .stats-row {
+    align-content: center;
+  }
+}
