@@ -432,6 +432,10 @@ export default function Panel({ collapsible = false, collapsed = false, onToggle
             </>
           )}
         </div>
+
+        <footer className="credit">
+          Juanda2207 · All rights reserved · {new Date().getFullYear()}
+        </footer>
       </div>
     </aside>
   )
