@@ -80,7 +80,13 @@ export default function App() {
 
   return (
     <div className={`app${panelCollapsed ? ' panel-collapsed' : ''}`}>
-      <Panel collapsible={narrow} collapsed={panelCollapsed} onToggle={() => open('notes')} />
+      <Panel
+        collapsible={narrow}
+        collapsed={panelCollapsed}
+        onToggle={() => open('notes')}
+        // Writing a note has to show the form, whatever was folded away.
+        onNewNote={() => setSheet('notes')}
+      />
       <main className="stage">
         {ready ? (
           <>

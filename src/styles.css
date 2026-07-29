@@ -72,6 +72,15 @@ textarea {
   padding: 18px 18px 14px;
 }
 
+.brand.is-tappable {
+  cursor: pointer;
+}
+
+.brand.is-tappable:hover .panel-toggle {
+  color: var(--text);
+  border-color: #37415a;
+}
+
 .panel-body {
   display: contents;
 }
@@ -321,6 +330,11 @@ textarea {
   border-radius: 7px 7px 0 0;
   margin-bottom: 4px;
   padding-bottom: 9px;
+}
+
+/* With the search and filter hidden, the list needs its own separator. */
+.panel-body > .scroll:first-child {
+  border-top: 1px solid var(--line);
 }
 
 .scroll {
@@ -746,8 +760,16 @@ textarea {
   cursor: pointer;
 }
 
+/* Collapsed, the header button becomes the whole card — the padding moves onto
+   it, so every pixel of the card opens the stats rather than just the text. */
+.stats.is-closed {
+  padding: 0;
+}
+
 .stats.is-closed .stats-head {
   margin-bottom: 0;
+  padding: 12px 13px;
+  border-radius: 12px;
 }
 
 .stats-head > span:first-child {
