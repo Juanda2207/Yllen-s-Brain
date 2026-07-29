@@ -82,6 +82,10 @@ export const useStore = create(
       updateDraft: (patch) => set((s) => ({ draft: { ...s.draft, ...patch } })),
       cancelDraft: () => set({ draft: null }),
 
+      /**
+       * Saving closes the form and hands you back the list — not the note you
+       * just wrote, which you have been staring at the whole time.
+       */
       saveDraft: () => {
         const draft = get().draft
         if (!draft) return
@@ -93,16 +97,18 @@ export const useStore = create(
               n.id === draft.id ? { ...n, title, body: draft.body, zoneId: draft.zoneId, updatedAt: now } : n,
             ),
             draft: null,
-            selectedNoteId: draft.id,
-            selectedZoneIds: keepOrFocus(s, draft.zoneId),
+            selectedNoteId: null,
+            // Don't drop the note into a list it is filtered out of.
+            selectedZoneIds: showsZone(s, draft.zoneId),
           }))
         } else {
           const id = uid()
           set((s) => ({
             notes: [...s.notes, { id, title, body: draft.body, zoneId: draft.zoneId, createdAt: now, updatedAt: now }],
             draft: null,
-            selectedNoteId: id,
-            selectedZoneIds: keepOrFocus(s, draft.zoneId),
+            selectedNoteId: null,
+            // Don't drop the note into a list it is filtered out of.
+            selectedZoneIds: showsZone(s, draft.zoneId),
           }))
         }
       },
@@ -141,11 +147,19 @@ function withZones(state, zoneIds) {
     state.selectedNoteId && (zoneIds.length === 0 || zoneIds.includes(noteZone(state, state.selectedNoteId)))
       ? state.selectedNoteId
       : null
-  const next = { selectedZoneIds: zoneIds, selectedNoteId: kept, draft: null }
+  // The search box is hidden outside the all-notes view, so a leftover query
+  // would filter the list from somewhere the user can't see or clear.
+  const next = { selectedZoneIds: zoneIds, selectedNoteId: kept, draft: null, search: '' }
   // Widening back out to every zone means there is no longer anything in
   // particular to look at, so pull the camera back to the opening view.
   if (zoneIds.length === 0 && state.selectedZoneIds.length > 0) next.focus = homeFocus()
   return next
+}
+
+/** Widen the filter to all zones if it would hide a note in `zoneId`. */
+function showsZone(state, zoneId) {
+  const zones = state.selectedZoneIds
+  return zones.length === 0 || zones.includes(zoneId) ? zones : []
 }
 
 /**
