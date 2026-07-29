@@ -46,6 +46,18 @@ select,
 textarea {
   font: inherit;
   color: inherit;
+  /* Kills the blue flash Chromium paints over anything tapped. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Controls that get hit repeatedly — without this, a second click lands as a
+   double-click and selects their text in blue. */
+.stats-head,
+.tool,
+.zone-opt,
+.stats-row {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .app {
@@ -709,9 +721,23 @@ textarea {
   color: var(--muted);
 }
 
-.tool:hover {
-  color: var(--text);
-  background: #1c2231;
+/* Touch and pen leave :hover latched on the last thing tapped until something
+   else is tapped, so only devices that can really hover get the style. */
+@media (hover: hover) {
+  .tool:hover {
+    color: var(--text);
+    background: #1c2231;
+  }
+}
+
+/* Clicking leaves the button focused; that must not read as still-hovered. */
+.tool:focus {
+  outline: none;
+}
+
+.tool:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .tool.is-on {
