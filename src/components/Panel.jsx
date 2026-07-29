@@ -338,7 +338,7 @@ function NoteEditor() {
 
 /* --------------------------------------------------------------------- panel */
 
-export default function Panel({ collapsible = false, collapsed = false, onToggle }) {
+export default function Panel({ collapsible = false, collapsed = false, onToggle, onNewNote }) {
   const draft = useStore((s) => s.draft)
   const selectedNoteId = useStore((s) => s.selectedNoteId)
   const selectedZoneIds = useStore((s) => s.selectedZoneIds)
@@ -347,9 +347,26 @@ export default function Panel({ collapsible = false, collapsed = false, onToggle
   const newDraft = useStore((s) => s.newDraft)
   const notes = useStore((s) => s.notes)
 
+  // Search and the zone filter belong to the full list. Once you are inside a
+  // zone, a note or the editor, they filter something you are no longer looking
+  // at — so they only show on the all-notes view.
+  const browsingAll = selectedZoneIds.length === 0 && !selectedNoteId && !draft
+
+  const startNote = () => {
+    newDraft(selectedZoneIds[0])
+    onNewNote?.() // on narrow, the panel may be folded away
+  }
+
+  // The whole header bar toggles the panel, open or closed — the caret alone is
+  // a small target. "+ New" is the only thing on the bar that does its own job.
+  const headerToggles = collapsible
+
   return (
     <aside className={`panel${collapsed ? ' is-collapsed' : ''}`}>
-      <header className="brand">
+      <header
+        className={`brand${headerToggles ? ' is-tappable' : ''}`}
+        onClick={headerToggles ? onToggle : undefined}
+      >
         <div>
           <h1>Yllen&rsquo;s Brain</h1>
           <p>
@@ -358,7 +375,15 @@ export default function Panel({ collapsible = false, collapsed = false, onToggle
               : `${notes.length} note${notes.length === 1 ? '' : 's'} filed across 8 regions`}
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => newDraft(selectedZoneIds[0])}>
+        {/* Both buttons stop the click reaching the header, which would
+            otherwise toggle the panel straight back. */}
+        <button
+          className="btn btn-primary"
+          onClick={(e) => {
+            e.stopPropagation()
+            startNote()
+          }}
+        >
           + New
         </button>
         {collapsible && (
@@ -367,7 +392,10 @@ export default function Panel({ collapsible = false, collapsed = false, onToggle
             className="panel-toggle"
             aria-expanded={!collapsed}
             aria-label={collapsed ? 'Show notes' : 'Hide notes'}
-            onClick={onToggle}
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggle()
+            }}
           >
             ▾
           </button>
@@ -377,16 +405,20 @@ export default function Panel({ collapsible = false, collapsed = false, onToggle
       {/* `display: contents` normally, so collapsing is one `display: none`
           rather than three, and the panel's own layout is untouched. */}
       <div className="panel-body">
-        <div className="search">
-          <input value={search} placeholder="Search notes…" onChange={(e) => setSearch(e.target.value)} />
-          {search && (
-            <button className="clear" onClick={() => setSearch('')} aria-label="Clear search">
-              ×
-            </button>
-          )}
-        </div>
+        {browsingAll && (
+          <>
+            <div className="search">
+              <input value={search} placeholder="Search notes…" onChange={(e) => setSearch(e.target.value)} />
+              {search && (
+                <button className="clear" onClick={() => setSearch('')} aria-label="Clear search">
+                  ×
+                </button>
+              )}
+            </div>
 
-        <ZoneFilter />
+            <ZoneFilter />
+          </>
+        )}
 
         <div className="scroll">
           {draft ? (
